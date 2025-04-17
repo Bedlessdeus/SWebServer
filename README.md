@@ -54,7 +54,7 @@ The server generates a log file for each session, named with the current unix ti
 * [@types/express](https://www.npmjs.com/package/@types/express) - TypeScript definitions for Express
 
 ## License
-This project is licensed under the ISC License.
+This project is licensed under the GPU GPLv3 License.
 
 ## Author
 Bedlessdeus
