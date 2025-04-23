@@ -33,6 +33,7 @@ jobs:
           cp -r dist zip-output/dist
           cd zip-output
           zip -r ../release.zip .
+          
       - name: Debug GitHub Token
         run: echo ${{ secrets.GITHUB_TOKEN }}
 
