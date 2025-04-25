@@ -1,6 +1,8 @@
 # Lightweight Web Server
+This is a lightweight, easy-to-configure, and resilient web server built with Node.js and Express. It is designed to serve static files and log incoming requests efficiently.
 
-This is a lightweight, easy-to-configure, and resilient web server built with Node.js and Express. It is designed to serve static files and log incoming requests efficiently. The server is highly customizable through environment variables, making it adaptable to various use cases.
+## Docker
+https://hub.docker.com/r/bedlessdeus/swebserver
 
 ## Features
 - **Static File Serving**: Serves static files from a configurable directory.
