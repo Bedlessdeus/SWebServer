@@ -7,7 +7,6 @@ https://hub.docker.com/r/bedlessdeus/swebserver
 ## Features
 - **Static File Serving**: Serves static files from a configurable directory.
 - **Request Logging**: Logs all incoming requests with details such as timestamp, method, URL, IP, protocol, and user-agent.
-- **Environment Variable Support**: Easily configurable using `.env` files.
 - **Resilient Design**: Handles errors gracefully and ensures smooth operation.
 
 ## Configuration
