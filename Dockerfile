@@ -9,9 +9,9 @@ RUN apt-get update && \
 
 RUN LATEST_URL=$(curl -s https://api.github.com/repos/Bedlessdeus/SWebServer/releases | jq -r '.[0] | .assets[] | select(.name | test("\\.zip$")) | .browser_download_url') && \
     curl -L "$LATEST_URL" -o /tmp/release.zip && \
-    unzip /tmp/release.zip -d /www/server && \
-    rm /tmp/release.zip
+    unzip /tmp/release.zip -d /www/server
 
 RUN npm install --omit=dev
+
 
 CMD ["npm", "run", "prod"]
