@@ -1,6 +1,9 @@
 FROM node:20
 
 ENV WS_PORT=80
+
+RUN mkdir -p /www/server
+
 WORKDIR /www/server
 
 RUN apt-get update && \
@@ -14,4 +17,10 @@ RUN LATEST_URL=$(curl -s https://api.github.com/repos/Bedlessdeus/SWebServer/rel
 RUN npm install --omit=dev
 
 
-CMD ["npm", "run", "prod"]
+CMD if [ "$WS_GEN_DEF" = "true" ]; then \
+      mkdir -p /var/www/html/css; \
+      cp -n /www/server/404.html /var/www/html/404.html; \
+      cp -n /www/server/403.html /var/www/html/403.html; \
+      cp -n /www/server/index.html /var/www/html/index.html; \
+      cp -n /www/server/css/style.css /var/www/html/css/style.css; \
+    fi && npm run prod

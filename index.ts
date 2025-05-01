@@ -1,43 +1,36 @@
 import express, { RequestHandler } from "express";
-import { writeFile, existsSync } from "fs";
+import { writeFile, existsSync, statSync } from "fs";
 import http from "http";
 import path from "path";
 
 const app = express();
-const server = http.createServer(app);
-const session = `${Date.now()}.log`;
+const sR = http.createServer(app);
+const sN = `${Date.now()}.log`;
 
-const staticDir = process.env.WS_FILEPATH ?? "/var/www/html";
-const port = parseInt(process.env.WS_PORT ?? "80", 10);
-const doLog = (process.env.WS_DO_LOG ?? "false").toLowerCase() === "true";
-const writeLog = (process.env.WS_WRITE_LOG ?? "false").toLowerCase() === "true";
+const sD = process.env.WS_FILEPATH ?? "/var/www/html";
+const p = parseInt(process.env.WS_PORT ?? "80", 10);
+const dL = (process.env.WS_DO_LOG ?? "false").toLowerCase() === "true";
+const wL = (process.env.WS_WRITE_LOG ?? "false").toLowerCase() === "true";
+const aE = (process.env.WS_ALLOWED_EXTENSIONS ?? ".html,.css").split(
+  ","
+) as Array<string>;
 
-// Remove the unholy trash that is known as Path To RegExp
-// You know what, I'm not done with you, whoever wrote the abomination that is Path To RegExp, deserves to be stoned.
-// If I find you, I will tear your head off, you as a person that though oh, lets make /* into /wildcard(*), because "Regex" is too difficult for me to understand.
-// I will make you suffer, I will make you cry, I will make you beg for mercy, and then I will delete your code, and replace it with a simple regex that does the same thing, but is actually readable and understandable.
-const getFuckYouPathToRegExp = (
-  route: string,
-  handler: (req: express.Request, res: express.Response) => void
-): void => {
-  app.get(new RegExp(route), handler);
-};
-
-if (doLog) {
+if (dL) {
   app.use((req, res, next) => {
-    const logEntry = [
-      Date.now(),
-      req.method,
-      req.hostname + req.url,
-      req.ip,
-      req.protocol,
-      req.get("user-agent")
-    ].join("|") + "\n";
+    const logEntry =
+      [
+        Date.now(),
+        req.method,
+        req.hostname + req.url,
+        req.ip,
+        req.protocol,
+        req.get("user-agent"),
+      ].join("|") + "\n";
 
     console.log(logEntry.trim());
 
-    if (writeLog) {
-      writeFile(session, logEntry, { flag: "a" }, (err) => {
+    if (wL) {
+      writeFile(sN, logEntry, { flag: "a" }, (err) => {
         if (err) {
           console.error("Error writing log file:", err);
         }
@@ -48,27 +41,52 @@ if (doLog) {
   });
 }
 
-getFuckYouPathToRegExp("/*", (req, res) => {
-  const requestedPath = path.join(staticDir, req.path);
+app.use((req, res, next) => {
+  const requestedPath = path.join(sD, req.path);
   const indexPath = path.join(requestedPath, "index.html");
   const htmlPath = requestedPath.endsWith("/")
     ? indexPath
     : requestedPath + ".html";
 
-  console.log("Requested path:", requestedPath);
+  const candidates = [requestedPath, indexPath, htmlPath].filter(Boolean);
+  console.log(candidates);
+  const found = candidates.find((p) => {
+    console.log(`Checking ${p}`);
+    return existsSync(p) && statSync(p).isFile();
+  });
 
-  if (existsSync(indexPath)) return res.sendFile(indexPath);
-  if (existsSync(htmlPath)) return res.sendFile(htmlPath);
-
-  const errorPage = path.join(staticDir, `${res.statusCode}.html`);
-  if (existsSync(errorPage)) {
-    return res.status(res.statusCode).sendFile(errorPage);
+  if (!found) {
+    res.locals.errorCode = 404;
+    return next();
   }
 
-  res.status(404).send("404 Not Found");
+  const isAllowed = aE.some((ext) => found.endsWith(ext));
+  if (!isAllowed) {
+    console.log(`Forbidden access to ${found}`);
+    res.locals.errorCode = 403;
+    return next();
+  }
+
+  res.locals.filePath = found;
+  next();
 });
 
-server.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}`);
-  console.log(`Session log file: ${session}`);
+app.use(((req, res, next) => {
+  const filePath = res.locals.filePath;
+  const errorCode = res.locals.errorCode;
+
+  if (filePath) {
+    return res.sendFile(filePath);
+  }
+
+  const errorPagePath = path.join(sD, `${errorCode}.html`);
+  if (existsSync(errorPagePath)) {
+    return res.status(errorCode).sendFile(errorPagePath);
+  }
+
+  res.status(errorCode || 500).send(`${errorCode || 500} Error`);
+}) as express.RequestHandler);
+sR.listen(p, () => {
+  console.log(`Server running at http://localhost:${p}`);
+  console.log(`Session log file: ${sN}`);
 });
