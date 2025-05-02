@@ -19,6 +19,9 @@ For the Docker image, check out the [Docker Hub page](https://hub.docker.com/r/b
 * **Custom Error Pages:** Easily customize 403, 404, and 500 error pages by placing `403.html`, `404.html`, or `500.html` files in the root directory.
 * **Coming Soon:** Feature to set custom headers for all responses via environment variables.
 
+## Demo Page
+> https://swebserver.shardp001.bedless.dev/
+
 ## Configuration
 
 `SWebServer` is configured using the following environment variables:
